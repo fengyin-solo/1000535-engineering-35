@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { request } from '@/api/client'
+import { fetchStats, request, type StatItem } from '@/api/client'
 
 type Row = Record<string, string | number | null>
 
@@ -73,7 +73,7 @@ const ENDPOINT = '/api/spare'
 const columns = ["领用单号", "器材名称", "器材规格", "领用数量", "领用人员", "领用日期", "所属工区", "领用状态"]
 const actions = ["批准领用", "确认发放", "退回器材"]
 const statuses = ["待审批", "已批准", "已领用", "已退回"]
-const stats = [{"label": "待审批领用", "value": 0}, {"label": "本月领用单", "value": 0}, {"label": "退回单数", "value": 0}]
+const stats = ref<StatItem[]>([{"label": "待审批领用", "value": 0}, {"label": "本月领用单", "value": 0}, {"label": "退回单数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -105,6 +105,7 @@ async function runAction(action: string, row: Row) {
       throw new Error('器材领用动作未生效，请稍后重试')
     }
     await reload()
+    await refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '器材领用操作失败'
   }
@@ -126,5 +127,16 @@ async function reload() {
   }
 }
 
-onMounted(reload)
+async function refreshStats() {
+  try {
+    stats.value = await fetchStats(ENDPOINT)
+  } catch {
+    // 统计卡片读取失败时保留旧值，不打断列表展示
+  }
+}
+
+onMounted(() => {
+  void reload()
+  void refreshStats()
+})
 </script>

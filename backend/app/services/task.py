@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "task"
@@ -12,7 +13,18 @@ ACTION_RULES = {"开始任务": "检修中", "提交验收": "待验收", "确�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待开始任务', 'status', '待开始'),
+    ('检修中任务', 'status', '检修中'),
+    ('遗留问题数', 'sum', '遗留问题数'),
+]
+
+
 class TaskService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { request } from '@/api/client'
+import { fetchStats, request, type StatItem } from '@/api/client'
 
 type Row = Record<string, string | number | null>
 
@@ -73,7 +73,7 @@ const ENDPOINT = '/api/track'
 const columns = ["设备编号", "制式类型", "区段长度", "分路灵敏度", "所属区段", "上次测试日", "下次测试日", "设备状态"]
 const actions = ["提交测试", "确认正常", "更换设备"]
 const statuses = ["待测试", "运用正常", "分路不良", "已更换"]
-const stats = [{"label": "在运轨道电路", "value": 0}, {"label": "分路不良区段", "value": 0}, {"label": "待测试设备", "value": 0}]
+const stats = ref<StatItem[]>([{"label": "在运轨道电路", "value": 0}, {"label": "分路不良区段", "value": 0}, {"label": "待测试设备", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -105,6 +105,7 @@ async function runAction(action: string, row: Row) {
       throw new Error('轨道电路动作未生效，请稍后重试')
     }
     await reload()
+    await refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '轨道电路操作失败'
   }
@@ -126,5 +127,16 @@ async function reload() {
   }
 }
 
-onMounted(reload)
+async function refreshStats() {
+  try {
+    stats.value = await fetchStats(ENDPOINT)
+  } catch {
+    // 统计卡片读取失败时保留旧值，不打断列表展示
+  }
+}
+
+onMounted(() => {
+  void reload()
+  void refreshStats()
+})
 </script>

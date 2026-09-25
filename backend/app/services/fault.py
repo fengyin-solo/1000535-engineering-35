@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "fault"
@@ -12,7 +13,18 @@ ACTION_RULES = {"确认定级": "已定级", "提交恢复": "已恢复", "挂�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待定级故障', 'status', '待定级'),
+    ('处置中故障', 'status', '处置中'),
+    ('今日恢复数', 'today', '恢复时间'),
+]
+
+
 class FaultService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

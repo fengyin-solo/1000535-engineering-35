@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { request } from '@/api/client'
+import { fetchStats, request, type StatItem } from '@/api/client'
 
 type Row = Record<string, string | number | null>
 
@@ -73,7 +73,7 @@ const ENDPOINT = '/api/task'
 const columns = ["任务编号", "关联计划", "检修人员", "开始时间", "完成时间", "检修项目数", "遗留问题数", "任务状态"]
 const actions = ["开始任务", "提交验收", "确认完成"]
 const statuses = ["待开始", "检修中", "待验收", "已完成"]
-const stats = [{"label": "待开始任务", "value": 0}, {"label": "检修中任务", "value": 0}, {"label": "遗留问题数", "value": 0}]
+const stats = ref<StatItem[]>([{"label": "待开始任务", "value": 0}, {"label": "检修中任务", "value": 0}, {"label": "遗留问题数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -105,6 +105,7 @@ async function runAction(action: string, row: Row) {
       throw new Error('检修任务动作未生效，请稍后重试')
     }
     await reload()
+    await refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '检修任务操作失败'
   }
@@ -126,5 +127,16 @@ async function reload() {
   }
 }
 
-onMounted(reload)
+async function refreshStats() {
+  try {
+    stats.value = await fetchStats(ENDPOINT)
+  } catch {
+    // 统计卡片读取失败时保留旧值，不打断列表展示
+  }
+}
+
+onMounted(() => {
+  void reload()
+  void refreshStats()
+})
 </script>

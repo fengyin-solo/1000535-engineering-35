@@ -5,6 +5,9 @@
 """
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,7 +15,19 @@ from app.config import settings
 from app.routers import ROUTERS
 from app.store import store
 
-app = FastAPI(title="轨道交通信号设备检修平台", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """启动时把示例数据补齐；已有数据就跳过，重复起服务不会塞重。"""
+    added = store.ensure_seeded()
+    if added:
+        print(f"示例数据已生成：{len(added)} 个模块 / {sum(added.values())} 条记录")
+    else:
+        print("示例数据已存在，跳过重复塞入")
+    yield
+
+
+app = FastAPI(title="轨道交通信号设备检修平台", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

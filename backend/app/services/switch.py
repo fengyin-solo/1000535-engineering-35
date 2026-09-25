@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "switch"
@@ -12,7 +13,18 @@ ACTION_RULES = {"确认检修": "运用正常", "登记动作异常": "动作异
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('在运转辙机', 'status', '运用正常'),
+    ('动作异常台数', 'status', '动作异常'),
+    ('待检修台数', 'status', '待检修'),
+]
+
+
 class SwitchService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { request } from '@/api/client'
+import { fetchStats, request, type StatItem } from '@/api/client'
 
 type Row = Record<string, string | number | null>
 
@@ -73,7 +73,7 @@ const ENDPOINT = '/api/signal'
 const columns = ["设备编号", "设备类型", "安装位置", "显示制式", "所属区段", "上次检修日", "下次检修日", "设备状态"]
 const actions = ["确认检修", "登记故障", "更换设备"]
 const statuses = ["待检修", "运用正常", "故障停用", "已更换"]
-const stats = [{"label": "在运信号机", "value": 0}, {"label": "待检修信号机", "value": 0}, {"label": "故障停用台数", "value": 0}]
+const stats = ref<StatItem[]>([{"label": "在运信号机", "value": 0}, {"label": "待检修信号机", "value": 0}, {"label": "故障停用台数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -105,6 +105,7 @@ async function runAction(action: string, row: Row) {
       throw new Error('信号机动作未生效，请稍后重试')
     }
     await reload()
+    await refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '信号机操作失败'
   }
@@ -126,5 +127,16 @@ async function reload() {
   }
 }
 
-onMounted(reload)
+async function refreshStats() {
+  try {
+    stats.value = await fetchStats(ENDPOINT)
+  } catch {
+    // 统计卡片读取失败时保留旧值，不打断列表展示
+  }
+}
+
+onMounted(() => {
+  void reload()
+  void refreshStats()
+})
 </script>

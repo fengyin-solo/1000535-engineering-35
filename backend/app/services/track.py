@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "track"
@@ -12,7 +13,18 @@ ACTION_RULES = {"提交测试": "运用正常", "确认正常": "分路不良", 
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('在运轨道电路', 'status', '运用正常'),
+    ('分路不良区段', 'status', '分路不良'),
+    ('待测试设备', 'status', '待测试'),
+]
+
+
 class TrackService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

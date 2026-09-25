@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "measure"
@@ -12,7 +13,18 @@ ACTION_RULES = {"开始测试": "测试中", "判定合格": "合格", "判定�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待测试单据', 'status', '待测试'),
+    ('测试合格率', 'percent_status', '合格'),
+    ('不合格项数', 'status', '不合格'),
+]
+
+
 class MeasureService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

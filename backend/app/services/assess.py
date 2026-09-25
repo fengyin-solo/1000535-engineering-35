@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "assess"
@@ -12,7 +13,18 @@ ACTION_RULES = {"开始评估": "评估中", "确认定级": "已定级", "发�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待评估对象', 'status', '待评估'),
+    ('高风险设备', 'field_eq', '风险等级', '高'),
+    ('健康分值均值', 'avg', '健康分值'),
+]
+
+
 class AssessService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

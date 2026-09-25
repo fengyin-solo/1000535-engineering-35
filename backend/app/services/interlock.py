@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "interlock"
@@ -12,7 +13,18 @@ ACTION_RULES = {"确认检修": "运用正常", "降级登记": "降级使用", 
 NEGATIVE_ACTIONS = ["停用设备"]
 
 
+STAT_RULES = [
+    ('在运联锁', 'status', '运用正常'),
+    ('降级使用设备', 'status', '降级使用'),
+    ('待检修设备', 'status', '待检修'),
+]
+
+
 class InterlockService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

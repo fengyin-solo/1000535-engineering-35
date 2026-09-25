@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "patrol"
@@ -12,7 +13,18 @@ ACTION_RULES = {"派发巡视": "巡视中", "提交结果": "已提交", "作�
 NEGATIVE_ACTIONS = ["作废巡视"]
 
 
+STAT_RULES = [
+    ('待派发巡视', 'status', '待派发'),
+    ('巡视中任务', 'status', '巡视中'),
+    ('本月发现问题', 'sum', '发现问题数'),
+]
+
+
 class PatrolService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

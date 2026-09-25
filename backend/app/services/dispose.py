@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "dispose"
@@ -12,7 +13,18 @@ ACTION_RULES = {"受理处置": "处置中", "提交验收": "待验收", "确�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待受理处置', 'status', '待受理'),
+    ('处置中单据', 'status', '处置中'),
+    ('本月验收单数', 'month', '完成时间'),
+]
+
+
 class DisposeService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

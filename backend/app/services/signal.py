@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "signal"
@@ -12,7 +13,18 @@ ACTION_RULES = {"确认检修": "运用正常", "登记故障": "故障停用", 
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('在运信号机', 'status', '运用正常'),
+    ('待检修信号机', 'status', '待检修'),
+    ('故障停用台数', 'status', '故障停用'),
+]
+
+
 class SignalService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

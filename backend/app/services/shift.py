@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "shift"
@@ -12,7 +13,18 @@ ACTION_RULES = {"开始交接": "交接中", "确认接收": "已交接", "补�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待交接记录', 'status', '待交接'),
+    ('今日交接次数', 'today', '交接时间'),
+    ('遗留事项数', 'present', '遗留事项'),
+]
+
+
 class ShiftService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

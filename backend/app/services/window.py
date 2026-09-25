@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "window"
@@ -12,7 +13,18 @@ ACTION_RULES = {"提交申请": "已批复", "开始作业": "作业中", "销�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待申请天窗', 'status', '待申请'),
+    ('作业中天窗', 'status', '作业中'),
+    ('本月天窗数', 'month', '计划时段'),
+]
+
+
 class WindowService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "spare"
@@ -12,7 +13,18 @@ ACTION_RULES = {"批准领用": "已批准", "确认发放": "已领用", "退�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('待审批领用', 'status', '待审批'),
+    ('本月领用单', 'month', '领用日期'),
+    ('退回单数', 'status', '已退回'),
+]
+
+
 class SpareService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

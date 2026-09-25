@@ -19,3 +19,15 @@ export async function fetchJson<T>(path: string): Promise<T> {
   }
   return (await response.json()) as T
 }
+
+export type StatItem = { label: string; value: number }
+
+/** 读取模块页头统计卡片；失败时抛错，由页面决定保留旧值还是提示。 */
+export async function fetchStats(endpoint: string): Promise<StatItem[]> {
+  const response = await request(`${endpoint}/stats`)
+  if (!response.ok) {
+    throw new Error(`统计接口返回 ${response.status}`)
+  }
+  const payload = (await response.json()) as { items?: StatItem[] }
+  return payload.items ?? []
+}

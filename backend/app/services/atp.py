@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "atp"
@@ -12,7 +13,18 @@ ACTION_RULES = {"启用防护": "防护正常", "提交升级": "版本待升级
 NEGATIVE_ACTIONS = ["停用防护"]
 
 
+STAT_RULES = [
+    ('在运防护设备', 'status', '防护正常'),
+    ('待升级版本', 'status', '版本待升级'),
+    ('覆盖区段数', 'distinct', '覆盖区段'),
+]
+
+
 class AtpService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

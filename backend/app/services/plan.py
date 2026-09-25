@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "plan"
@@ -12,7 +13,18 @@ ACTION_RULES = {"提交审批": "已批复", "确认执行": "执行中", "作�
 NEGATIVE_ACTIONS = ["作废计划"]
 
 
+STAT_RULES = [
+    ('待审批计划', 'status', '待审批'),
+    ('执行中计划', 'status', '执行中'),
+    ('本月计划数', 'month', '计划日期'),
+]
+
+
 class PlanService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

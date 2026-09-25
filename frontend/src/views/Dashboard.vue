@@ -12,6 +12,7 @@
         <strong class="stat-value">{{ card.value }}</strong>
       </article>
     </div>
+    <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
     <table class="data-table">
       <thead>
         <tr><th>业务模块</th><th>今日新增</th><th>待处理</th><th>异常量</th></tr>
@@ -40,6 +41,7 @@ type Overview = {
 
 const cards = ref<Overview['cards']>([])
 const moduleRows = ref<Overview['modules']>([])
+const errorMessage = ref('')
 
 onMounted(async () => {
   try {
@@ -47,6 +49,8 @@ onMounted(async () => {
     cards.value = payload.cards
     moduleRows.value = payload.modules
   } catch {
+    // 后端没起来时给出可读提示，而不是悄悄显示一排零
+    errorMessage.value = '后端接口暂时不可达，下面展示的是占位数据：请先执行 make dev 启动后端'
     cards.value = [{"label": "业务模块", "value": 0}, {"label": "今日新增", "value": 0}]
     moduleRows.value = [{"name": "线路区段", "created": 0, "pending": 0, "abnormal": 0}, {"name": "信号机", "created": 0, "pending": 0, "abnormal": 0}, {"name": "转辙机", "created": 0, "pending": 0, "abnormal": 0}, {"name": "轨道电路", "created": 0, "pending": 0, "abnormal": 0}, {"name": "联锁设备", "created": 0, "pending": 0, "abnormal": 0}, {"name": "列车防护", "created": 0, "pending": 0, "abnormal": 0}, {"name": "检修计划", "created": 0, "pending": 0, "abnormal": 0}, {"name": "检修任务", "created": 0, "pending": 0, "abnormal": 0}, {"name": "故障登记", "created": 0, "pending": 0, "abnormal": 0}, {"name": "故障处置", "created": 0, "pending": 0, "abnormal": 0}, {"name": "器材领用", "created": 0, "pending": 0, "abnormal": 0}, {"name": "电气测试", "created": 0, "pending": 0, "abnormal": 0}, {"name": "巡视检查", "created": 0, "pending": 0, "abnormal": 0}, {"name": "天窗作业", "created": 0, "pending": 0, "abnormal": 0}, {"name": "监测报警", "created": 0, "pending": 0, "abnormal": 0}, {"name": "验收确认", "created": 0, "pending": 0, "abnormal": 0}, {"name": "值班交接", "created": 0, "pending": 0, "abnormal": 0}, {"name": "状态评估", "created": 0, "pending": 0, "abnormal": 0}]
   }

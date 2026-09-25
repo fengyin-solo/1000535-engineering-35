@@ -1,0 +1,4 @@
+# 本地依赖与构建产物不进镜像：镜像里重新 npm ci，避免平台差异
+node_modules/
+dist/
+.run/

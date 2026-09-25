@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "section"
@@ -12,7 +13,18 @@ ACTION_RULES = {"办理投用": "已投用", "申请限速": "限速运行", "�
 NEGATIVE_ACTIONS = []
 
 
+STAT_RULES = [
+    ('在用区段', 'status', '已投用'),
+    ('限速区段', 'status', '限速运行'),
+    ('封闭区段', 'status', '已封闭'),
+]
+
+
 class SectionService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

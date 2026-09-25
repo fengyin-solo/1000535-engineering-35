@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 
-import { request } from '@/api/client'
+import { fetchStats, request, type StatItem } from '@/api/client'
 
 type Row = Record<string, string | number | null>
 
@@ -73,7 +73,7 @@ const ENDPOINT = '/api/window'
 const columns = ["天窗编号", "作业类型", "作业区段", "计划时段", "实际时段", "申请单位", "负责人", "天窗状态"]
 const actions = ["提交申请", "开始作业", "销记天窗"]
 const statuses = ["待申请", "已批复", "作业中", "已销记"]
-const stats = [{"label": "待申请天窗", "value": 0}, {"label": "作业中天窗", "value": 0}, {"label": "本月天窗数", "value": 0}]
+const stats = ref<StatItem[]>([{"label": "待申请天窗", "value": 0}, {"label": "作业中天窗", "value": 0}, {"label": "本月天窗数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -105,6 +105,7 @@ async function runAction(action: string, row: Row) {
       throw new Error('天窗作业动作未生效，请稍后重试')
     }
     await reload()
+    await refreshStats()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '天窗作业操作失败'
   }
@@ -126,5 +127,16 @@ async function reload() {
   }
 }
 
-onMounted(reload)
+async function refreshStats() {
+  try {
+    stats.value = await fetchStats(ENDPOINT)
+  } catch {
+    // 统计卡片读取失败时保留旧值，不打断列表展示
+  }
+}
+
+onMounted(() => {
+  void reload()
+  void refreshStats()
+})
 </script>

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from app.stats import compute_stats
 from app.store import store
 
 MODULE = "alarm"
@@ -12,7 +13,18 @@ ACTION_RULES = {"确认报警": "已确认", "处置报警": "已处置", "忽�
 NEGATIVE_ACTIONS = ["忽略报警"]
 
 
+STAT_RULES = [
+    ('今日报警', 'today', '触发时间'),
+    ('待确认报警', 'status', '待确认'),
+    ('高等级报警', 'field_eq', '报警等级', '高'),
+]
+
+
 class AlarmService:
+    def stats(self) -> list[dict[str, Any]]:
+        """页头统计卡片：按本模块口径汇总当前记录。"""
+        return compute_stats(store.rows(MODULE), STAT_RULES)
+
     def list_entries(
         self,
         *,

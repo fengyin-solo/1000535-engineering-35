@@ -1,3 +1,5 @@
-fastapi>=0.110
-uvicorn[standard]>=0.29
-pydantic>=2.6
+# 版本已锁定：新同事克隆下来装出的依赖与 CI、Docker 镜像一致。
+# 升级时同步修改本文件并验证 `make dev` 自检通过。
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
