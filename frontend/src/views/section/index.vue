@@ -73,7 +73,7 @@ const ENDPOINT = '/api/section'
 const columns = ["区段编码", "区段名称", "所属线路", "起止里程", "管辖工区", "投运日期", "限速值", "区段状态"]
 const actions = ["办理投用", "申请限速", "封闭区段"]
 const statuses = ["在建", "已投用", "限速运行", "已封闭"]
-const stats = [{"label": "在用区段", "value": 0}, {"label": "限速区段", "value": 0}, {"label": "封闭区段", "value": 0}]
+const stats = ref([{"label": "在用区段", "value": 0}, {"label": "限速区段", "value": 0}, {"label": "封闭区段", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '线路区段列表读取失败'
   }

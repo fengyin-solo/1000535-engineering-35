@@ -73,7 +73,7 @@ const ENDPOINT = '/api/plan'
 const columns = ["计划编号", "检修类型", "检修对象", "计划日期", "检修周期", "作业班组", "计划工时", "计划状态"]
 const actions = ["提交审批", "确认执行", "作废计划"]
 const statuses = ["待审批", "已批复", "执行中", "已作废"]
-const stats = [{"label": "待审批计划", "value": 0}, {"label": "执行中计划", "value": 0}, {"label": "本月计划数", "value": 0}]
+const stats = ref([{"label": "待审批计划", "value": 0}, {"label": "执行中计划", "value": 0}, {"label": "本月计划数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '检修计划列表读取失败'
   }

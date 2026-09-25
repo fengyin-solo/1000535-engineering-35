@@ -73,7 +73,7 @@ const ENDPOINT = '/api/dispose'
 const columns = ["处置单号", "关联故障", "处置措施", "更换器材", "处置人员", "完成时间", "验收人员", "处置状态"]
 const actions = ["受理处置", "提交验收", "确认验收"]
 const statuses = ["待受理", "处置中", "待验收", "已验收"]
-const stats = [{"label": "待受理处置", "value": 0}, {"label": "处置中单据", "value": 0}, {"label": "本月验收单数", "value": 0}]
+const stats = ref([{"label": "待受理处置", "value": 0}, {"label": "处置中单据", "value": 0}, {"label": "本月验收单数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '故障处置列表读取失败'
   }

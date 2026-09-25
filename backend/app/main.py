@@ -1,11 +1,11 @@
 """轨道交通信号设备检修平台 后端服务入口。
 
-启动：uvicorn app.main:app --host 127.0.0.1 --port 8000
+启动（推荐）：python run.py，会自动探测可用端口
 健康检查：GET /api/health
 """
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
@@ -22,6 +22,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 写操作（POST/PUT/PATCH/DELETE）返回之后统一落盘，
+# 路由和 service 层不用关心持久化，老接口约定保持不变。
+_WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+@app.middleware("http")
+async def persist_writes(request: Request, call_next):
+    response = await call_next(request)
+    if request.method in _WRITE_METHODS and response.status_code < 400:
+        store.flush()
+    return response
+
+
 for module in ROUTERS:
     app.include_router(module.router)
 
@@ -29,10 +42,23 @@ for module in ROUTERS:
 @app.get("/api/health")
 def health() -> dict[str, object]:
     """健康检查：确认服务已经监听、示例数据已经就绪。"""
-    return {"ok": True, "app": settings.app_name, "modules": len(store.module_names())}
+    return {
+        "ok": True,
+        "app": settings.app_name,
+        "env": settings.env,
+        "seeded": store.seeded,
+        "modules": len(store.module_names()),
+    }
 
 
 @app.get("/api/overview")
 def overview() -> dict[str, object]:
     """运营概览：把各业务模块的待处理量汇总成看板卡片。"""
     return store.overview()
+
+
+@app.post("/api/admin/reset-seed")
+def reset_seed() -> dict[str, object]:
+    """把本地数据恢复成示例数据（仅本地联调使用，不属于业务接口约定）。"""
+    store.reset_to_seed()
+    return {"ok": True, "message": "示例数据已重置", "modules": len(store.module_names())}

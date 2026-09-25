@@ -73,7 +73,7 @@ const ENDPOINT = '/api/assess'
 const columns = ["评估编号", "评估对象", "评估周期", "健康分值", "风险等级", "评估人员", "评估结论", "评估状态"]
 const actions = ["开始评估", "确认定级", "发起复评"]
 const statuses = ["待评估", "评估中", "已定级", "已复评"]
-const stats = [{"label": "待评估对象", "value": 0}, {"label": "高风险设备", "value": 0}, {"label": "健康分值均值", "value": 0}]
+const stats = ref([{"label": "待评估对象", "value": 0}, {"label": "高风险设备", "value": 0}, {"label": "健康分值均值", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '状态评估列表读取失败'
   }

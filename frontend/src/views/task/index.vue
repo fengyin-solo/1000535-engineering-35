@@ -73,7 +73,7 @@ const ENDPOINT = '/api/task'
 const columns = ["任务编号", "关联计划", "检修人员", "开始时间", "完成时间", "检修项目数", "遗留问题数", "任务状态"]
 const actions = ["开始任务", "提交验收", "确认完成"]
 const statuses = ["待开始", "检修中", "待验收", "已完成"]
-const stats = [{"label": "待开始任务", "value": 0}, {"label": "检修中任务", "value": 0}, {"label": "遗留问题数", "value": 0}]
+const stats = ref([{"label": "待开始任务", "value": 0}, {"label": "检修中任务", "value": 0}, {"label": "遗留问题数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '检修任务列表读取失败'
   }

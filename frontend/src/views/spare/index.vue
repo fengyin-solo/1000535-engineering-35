@@ -73,7 +73,7 @@ const ENDPOINT = '/api/spare'
 const columns = ["领用单号", "器材名称", "器材规格", "领用数量", "领用人员", "领用日期", "所属工区", "领用状态"]
 const actions = ["批准领用", "确认发放", "退回器材"]
 const statuses = ["待审批", "已批准", "已领用", "已退回"]
-const stats = [{"label": "待审批领用", "value": 0}, {"label": "本月领用单", "value": 0}, {"label": "退回单数", "value": 0}]
+const stats = ref([{"label": "待审批领用", "value": 0}, {"label": "本月领用单", "value": 0}, {"label": "退回单数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '器材领用列表读取失败'
   }

@@ -73,7 +73,7 @@ const ENDPOINT = '/api/patrol'
 const columns = ["巡视单号", "巡视路线", "巡视人员", "巡视日期", "发现问题数", "整改项数", "巡视时长", "巡视状态"]
 const actions = ["派发巡视", "提交结果", "作废巡视"]
 const statuses = ["待派发", "巡视中", "已提交", "已作废"]
-const stats = [{"label": "待派发巡视", "value": 0}, {"label": "巡视中任务", "value": 0}, {"label": "本月发现问题", "value": 0}]
+const stats = ref([{"label": "待派发巡视", "value": 0}, {"label": "巡视中任务", "value": 0}, {"label": "本月发现问题", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '巡视检查列表读取失败'
   }

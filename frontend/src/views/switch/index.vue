@@ -73,7 +73,7 @@ const ENDPOINT = '/api/switch'
 const columns = ["设备编号", "设备型号", "安装道岔", "动作电流", "转换时间", "所属区段", "上次检修日", "设备状态"]
 const actions = ["确认检修", "登记动作异常", "更换设备"]
 const statuses = ["待检修", "运用正常", "动作异常", "已更换"]
-const stats = [{"label": "在运转辙机", "value": 0}, {"label": "动作异常台数", "value": 0}, {"label": "待检修台数", "value": 0}]
+const stats = ref([{"label": "在运转辙机", "value": 0}, {"label": "动作异常台数", "value": 0}, {"label": "待检修台数", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '转辙机列表读取失败'
   }

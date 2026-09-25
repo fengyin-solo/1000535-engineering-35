@@ -73,7 +73,7 @@ const ENDPOINT = '/api/interlock'
 const columns = ["设备编号", "联锁类型", "控制范围", "软件版本", "所属车站", "上次检修日", "责任人", "设备状态"]
 const actions = ["确认检修", "降级登记", "停用设备"]
 const statuses = ["待检修", "运用正常", "降级使用", "已停用"]
-const stats = [{"label": "在运联锁", "value": 0}, {"label": "降级使用设备", "value": 0}, {"label": "待检修设备", "value": 0}]
+const stats = ref([{"label": "在运联锁", "value": 0}, {"label": "降级使用设备", "value": 0}, {"label": "待检修设备", "value": 0}])
 
 const rows = ref<Row[]>([])
 const total = ref(0)
@@ -121,6 +121,12 @@ async function reload() {
     const payload = await response.json()
     rows.value = payload.items ?? []
     total.value = payload.total ?? rows.value.length
+    if (Array.isArray(payload.stats)) {
+      stats.value = stats.value.map((item, index) => ({
+        ...item,
+        value: payload.stats[index] ?? 0,
+      }))
+    }
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : '联锁设备列表读取失败'
   }

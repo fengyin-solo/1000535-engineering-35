@@ -85,3 +85,6 @@ desktop.ini
 *.db
 *.pid
 *.seed
+
+# 本地运行状态（示例数据 data.json、日志），与构建产物互不干扰
+.local/

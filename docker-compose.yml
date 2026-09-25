@@ -5,9 +5,22 @@ services:
       - "8000:8000"
     environment:
       - APP_ENV=local
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      # 容器内示例数据落到命名卷，容器重启不会重复塞入
+      - APP_DATA_PATH=/srv/app/.local/data.json
+    volumes:
+      - backend-data:/srv/app/.local
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
+    environment:
+      # 容器网络里前端代理指向 backend 服务，而不是容器自己的 127.0.0.1
+      - VITE_PROXY_TARGET=http://backend:8000
+      - VITE_PORT=5173
     depends_on:
       - backend
+
+volumes:
+  backend-data:

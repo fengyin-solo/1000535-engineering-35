@@ -13,6 +13,8 @@ class PageResult(BaseModel, Generic[T]):
     total: int
     page: int = 1
     size: int = 20
+    # 模块顶部统计卡片的数字（可选，老的消费方忽略该字段即可）
+    stats: list[int] | None = None
 
 
 class ActionResult(BaseModel):
@@ -26,6 +28,9 @@ class EntryPayload(BaseModel):
 
     values: dict[str, Any] = Field(default_factory=dict)
     remark: str | None = None
+    # 状态流转动作。前端按钮直接发 {"action": "..."}；
+    # 老约定把动作放在 values 里（{"values": {"action": "..."}}），路由层两种都认。
+    action: str | None = None
 
 
 

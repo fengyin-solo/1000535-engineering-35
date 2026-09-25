@@ -1,7 +1,13 @@
-"""示例数据：每个模块给几条不同状态的记录，方便起服务后立刻看到内容。"""
+"""示例数据：每个模块给几条不同状态的记录，方便起服务后立刻看到内容。
+
+SEED_VERSION 是示例数据的版本号：数据文件里会记下当时的版本，
+示例数据结构升级时可以据此迁移；只要数据文件已存在，重启服务就不会重复灌入。
+"""
 from __future__ import annotations
 
 from typing import Any
+
+SEED_VERSION = 1
 
 SEED_ROWS: dict[str, list[dict[str, Any]]] = {
     "section": [{'id': 1,
